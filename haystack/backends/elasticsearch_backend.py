@@ -756,6 +756,13 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
                     else:
                         additional_fields["_distance"] = None
 
+                # 'score' is a reserved Elasticsearch key. There is no mechanism in
+                # haystack to prevent it.
+                # This pop is added to ensure that lack of developer awareness upstream
+                # doesn't cascado into a catastrophic error.
+                # While this may silently fail in the application using this package,
+                # we believe it's safer than negatively affecting the index.
+                additional_fields.pop('score', None)
                 result = result_class(
                     app_label,
                     model_name,
