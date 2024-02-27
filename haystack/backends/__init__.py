@@ -429,12 +429,18 @@ class SearchNode(tree.Node):
 
     def split_expression(self, expression):
         """Parses an expression and determines the field and filter type."""
+        """
+        tridge: allow __ separator as representation of Django relationship for fields.
+        {model}__{pychildren}_{field}__{filter}
+        """
+
         parts = expression.split(FILTER_SEPARATOR)
         field = parts[0]
-        if len(parts) == 1 or parts[-1] not in VALID_FILTERS:
-            filter_type = "content"
-        else:
+        if len(parts) > 1 and parts[-1] in VALID_FILTERS:
             filter_type = parts.pop()
+        else:
+            filter_type = 'content'
+        field = FILTER_SEPARATOR.join(parts)
 
         return (field, filter_type)
 
