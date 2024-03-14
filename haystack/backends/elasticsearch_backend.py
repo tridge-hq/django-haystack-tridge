@@ -361,6 +361,12 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
                 }
             }
 
+        # Elasticsearch7 changed the default behaviors of "hits" to return a default of
+        # 10000.
+        # Explictly passing track_total_hits is required to get all result counts.
+        # https://www.elastic.co/guide/en/elasticsearch/reference/7.17/search-your-data.html#track-total-hits
+        kwargs["track_total_hits"] = True
+
         # so far, no filters
         filters = []
 
