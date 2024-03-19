@@ -1039,6 +1039,11 @@ class ElasticsearchSearchQuery(BaseSearchQuery):
         }
         order_by_list = None
 
+        # At the first pass initialize the backend as we need the mapping to ensure
+        # that we can use the keyword multi-field or not.
+        if not self.backend.setup_complete:
+            self.backend.setup()
+
         if self.order_by:
             if order_by_list is None:
                 order_by_list = []
@@ -1048,6 +1053,19 @@ class ElasticsearchSearchQuery(BaseSearchQuery):
                 if field.startswith("-"):
                     direction = "desc"
                     field = field[1:]
+
+                # Use typing of the mapping to define whether the multi-mapped field
+                # keyword exists.
+                # This is to ultimately deal with ES7 deprecation of ordering on text
+                # field.
+                # https://www.elastic.co/guide/en/elasticsearch/reference/current/text.html#fielddata-mapping-param
+                # https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-fields.html#multi-fields
+                if _properties := self.backend.existing_mapping["properties"].get(field):
+                    if _field_properties := _properties.get("fields"):
+                        for _key, _field in _field_properties.items():
+                            if _field["type"] == "keyword":
+                                field = f"{field}.{_key}"
+                                break
                 order_by_list.append((field, direction))
 
             search_kwargs["sort_by"] = order_by_list
