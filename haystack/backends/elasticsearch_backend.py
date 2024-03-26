@@ -841,6 +841,8 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
             return str(value, errors="replace")
         elif isinstance(value, set):
             return list(value)
+        elif isinstance(value, bool):
+            return str(value).lower()
         return value
 
     def _to_python(self, value):

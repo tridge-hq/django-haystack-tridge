@@ -371,6 +371,9 @@ class BooleanField(SearchField):
         if value is None:
             return None
 
+        if isinstance(value, str):
+            return False if value in ('false', '') else True
+
         return bool(value)
 
 
