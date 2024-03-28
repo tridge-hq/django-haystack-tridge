@@ -153,6 +153,11 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
     def _get_current_mapping(self, field_mapping):
         return {"modelresult": {"properties": field_mapping}}
 
+    def get_current_index_mapping_properties(self):
+        if not self.existing_mapping:
+            return {}
+        return self.existing_mapping[self.index_name]["mappings"]["properties"]
+
     def setup(self):
         """
         Defers loading until needed.
@@ -1062,7 +1067,7 @@ class ElasticsearchSearchQuery(BaseSearchQuery):
                 # field.
                 # https://www.elastic.co/guide/en/elasticsearch/reference/current/text.html#fielddata-mapping-param
                 # https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-fields.html#multi-fields
-                if _properties := self.backend.existing_mapping["properties"].get(field):
+                if _properties := self.backend.get_current_index_mapping_properties().get(field):
                     if _field_properties := _properties.get("fields"):
                         for _key, _field in _field_properties.items():
                             if _field["type"] == "keyword":
