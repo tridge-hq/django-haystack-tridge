@@ -55,3 +55,7 @@ class Indexable:
 # For the geo bits, since that's what Solr & Elasticsearch seem to silently
 # assume...
 WGS_84_SRID = 4326
+
+# To simplify the loss of size=0 support of aggregations in Elasticsearch
+# maintain the equivalent of size=0 == max(int)
+MAX_FACET_COUNT = 2147483647
