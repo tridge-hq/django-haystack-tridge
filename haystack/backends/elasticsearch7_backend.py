@@ -102,6 +102,12 @@ class Elasticsearch7SearchBackend(ElasticsearchSearchBackend):
         # ES7 does not support a doc_type option
         return {"properties": field_mapping}
 
+    def get_current_index_mapping_properties(self):
+        # ES7 does not support a doc_type option
+        if not self.existing_mapping:
+            return {}
+        return self.existing_mapping["properties"]
+
     def clear(self, models=None, commit=True):
         """
         Clears the backend of all documents/objects for a collection of models.
