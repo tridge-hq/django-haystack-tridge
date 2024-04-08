@@ -156,7 +156,7 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
     def get_current_index_mapping_properties(self):
         if not self.existing_mapping:
             return {}
-        return self.existing_mapping[self.index_name]["mappings"]["properties"]
+        return self.existing_mapping["modelresult"]["properties"]
 
     def setup(self):
         """
@@ -194,6 +194,18 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
             except Exception:
                 if not self.silently_fail:
                     raise
+
+                # Convert to the same structure as _get_current_mapping to deal with
+                # put_mapping failures (400)
+                # {'index_name': {'mappings': {'properties': ... }}}
+                # ->
+                # {"modelresult": {"properties": ... }}
+                # This is to keep the expectation of the mapping dict consistent
+                # across the codebase.
+
+                self.existing_mapping = self._get_current_mapping(
+                    self.existing_mapping[self.index_name]['mappings']['properties']
+                )
 
         self.setup_complete = True
 
