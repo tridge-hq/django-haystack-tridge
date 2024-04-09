@@ -274,9 +274,16 @@ class Elasticsearch7SearchBackend(ElasticsearchSearchBackend):
             kwargs.setdefault("aggs", {})
 
             for facet_fieldname, extra_options in facets.items():
+                facet_fieldname = index.get_facet_fieldname(facet_fieldname)
+                if _properties := self.get_current_index_mapping_properties().get(facet_fieldname):
+                    if _field_properties := _properties.get("fields"):
+                        for _key, _field in _field_properties.items():
+                            if _field["type"] == "keyword":
+                                facet_fieldname = f"{facet_fieldname}.{_key}"
+                                break
                 facet_options = {
                     "meta": {"_type": "terms"},
-                    "terms": {"field": index.get_facet_fieldname(facet_fieldname)},
+                    "terms": {"field": facet_fieldname},
                 }
                 if "order" in extra_options:
                     facet_options["meta"]["order"] = extra_options.pop("order")
