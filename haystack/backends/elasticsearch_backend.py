@@ -165,6 +165,7 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
         # Get the existing mapping & cache it. We'll compare it
         # during the ``update`` & if it doesn't match, we'll put the new
         # mapping.
+        haystack_id_mapping = None
         try:
             self.existing_mapping = self.conn.indices.get_mapping(index=self.index_name)
             if _mappings := self.existing_mapping[self.index_name].get('mappings'):
