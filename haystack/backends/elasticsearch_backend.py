@@ -167,6 +167,8 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
         # mapping.
         try:
             self.existing_mapping = self.conn.indices.get_mapping(index=self.index_name)
+            if _mappings := self.existing_mapping[self.index_name].get('mappings'):
+                haystack_id_mapping = _mappings['properties'][ID]
         except NotFoundError:
             pass
         except Exception:
@@ -206,6 +208,9 @@ class ElasticsearchSearchBackend(BaseSearchBackend):
                 self.existing_mapping = self._get_current_mapping(
                     self.existing_mapping[self.index_name]['mappings']['properties']
                 )
+
+        if haystack_id_mapping:
+            self.existing_mapping['properties'][ID] = haystack_id_mapping
 
         self.setup_complete = True
 
